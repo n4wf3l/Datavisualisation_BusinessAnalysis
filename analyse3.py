@@ -1,25 +1,46 @@
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-csv_file_path = "opslagtijd_per_product.csv"
-df = pd.read_csv(csv_file_path)
+# Fictieve gegevens voor het voorbeeld
+weken = np.array(['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'])
+overschot_van = np.array([50, 40, 30, 20, 10])  # Overschot in kg vóór de promoties
+overschot_na = np.array([45, 30, 20, 10, 5])   # Overschot in kg ná de promoties
+winst = np.array([200, 300, 400, 600, 800])   # Winst in euro's gegenereerd door de promoties
 
-producten = df["Product"].unique()
-opslagtijd = [df[df["Product"] == product]["Opslagtijd"].tolist() for product in producten]
+# Aanmaken van de grafiek voor de impact van de promoties
+fig, ax1 = plt.subplots(figsize=(10, 6))
 
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.boxplot(opslagtijd, labels=producten, patch_artist=True)
+# Balken voor de overschotten
+balk_breedte = 0.35
+index = np.arange(len(weken))
 
-ax.set_title('Analyse van de Opslagtijd per Product en Invloed op Overschotten', fontsize=14)
-ax.set_xlabel('Product', fontsize=12)
-ax.set_ylabel('Opslagtijd (dagen)', fontsize=12)
-ax.grid(axis='y', linestyle='--', alpha=0.7)
+balk1 = ax1.bar(index, overschot_van, balk_breedte, label='Overschot vóór promoties', color='lightblue')
+balk2 = ax1.bar(index + balk_breedte, overschot_na, balk_breedte, label='Overschot ná promoties', color='lightgreen')
+ax1.set_ylabel('Hoeveelheid overschot (kg)', color='black')
+ax1.set_title("Impact van Promoties op de Overschotten en Winst")
+ax1.set_xticks(index + balk_breedte / 2)
+ax1.set_xticklabels(weken)
+ax1.tick_params(axis='y', labelcolor='black')
 
-colors = ['skyblue', 'orange', 'lightgreen']
-for patch, color in zip(ax.artists, colors):
-    patch.set_facecolor(color)
+# Waarden boven de balken toevoegen
+for i in range(len(overschot_van)):
+    ax1.text(i, overschot_van[i] + 1, str(overschot_van[i]), ha='center', color='black')
+    ax1.text(i + balk_breedte, overschot_na[i] + 1, str(overschot_na[i]), ha='center', color='black')
 
-plt.tight_layout()
+# Tweede as toevoegen voor de winst
+ax2 = ax1.twinx()
+ax2.plot(weken, winst, color='orange', marker='o', label='Winst (in €)', linewidth=2)
+ax2.set_ylabel('Winst (in €)', color='orange')
+ax2.tick_params(axis='y', labelcolor='orange')
 
+# Waarden van de winst toevoegen
+for i in range(len(winst)):
+    ax2.text(i, winst[i] + 20, str(winst[i]), ha='center', color='orange')
+
+# Legenda
+fig.tight_layout()
+ax1.legend(loc='upper left')
+ax2.legend(loc='upper right')
+
+# Grafiek weergeven
 plt.show()
