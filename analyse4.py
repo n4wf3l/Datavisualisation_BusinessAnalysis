@@ -1,44 +1,37 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-# Charger les données CSV
-df = pd.read_csv('surplus_promoties.csv')
+# Dummydata voor voor-en-na resultaten van conversietests
+data = {
+    'Oplossing': ['Call-to-Action Test', 'Introductie Test', 'Proefabonnement Test'],
+    'Conversie Voor (%)': [7, 7, 7],  # Huidige conversie voor de tests
+    'Conversie Na (%)': [8, 9, 10]    # Resultaten na de tests
+}
 
-# Réorganiser les données pour avoir deux colonnes distinctes pour avec et sans promotion
-df_melted = pd.melt(df, id_vars=['week', 'product'], 
-                    value_vars=['overschot_met_promotie', 'overschot_zonder_promotie'], 
-                    var_name='Promotie', value_name='Overschotten')
+# DataFrame maken
+df_conversie = pd.DataFrame(data)
 
-# Créer le graphique à barres groupées avec produit et semaine
-g = sns.catplot(data=df_melted, x='week', y='Overschotten', hue='Promotie', col='product', 
-                kind='bar', palette=['green', 'red'], ci=None, height=4, aspect=0.75)
+# Positie van de balken bepalen
+x = range(len(df_conversie['Oplossing']))
+bar_width = 0.35
 
-# Ajouter les annotations pour chaque barre
-for ax in g.axes.flat:
-    for p in ax.patches:
-        ax.annotate(format(p.get_height(), '.1f'), 
-                    (p.get_x() + p.get_width() / 2., p.get_height()), 
-                    ha = 'center', va = 'center', 
-                    xytext = (0, 8),  # Légère distance par rapport à la barre
-                    textcoords = 'offset points')
+# Grafiek maken
+plt.figure(figsize=(10, 6))
+plt.bar([i - bar_width/2 for i in x], df_conversie['Conversie Voor (%)'], width=bar_width, label='Voor', color='lightgray')
+plt.bar([i + bar_width/2 for i in x], df_conversie['Conversie Na (%)'], width=bar_width, label='Na', color='lightblue')
 
-# Ajuster les titres et étiquettes
-g.set_titles("{col_name}")  # Garde uniquement le nom du produit
-g.set_axis_labels("Week", "Overschotten (in kg)")
-g.fig.suptitle('Impact van Promoties op Overschotten (per week, per product)', fontsize=16)
+# Titels en labels
+plt.title('Voor- en na-resultaten van conversietests', fontsize=14)
+plt.ylabel('Conversiepercentage (%)', fontsize=12)
+plt.xticks(x, df_conversie['Oplossing'], rotation=15)
+plt.xlabel('Oplossingen', fontsize=12)
+plt.legend()
 
-# Désactiver la légende automatique
-g._legend.remove()
+# Waarden boven de balken tonen
+for i, (v1, v2) in enumerate(zip(df_conversie['Conversie Voor (%)'], df_conversie['Conversie Na (%)'])):
+    plt.text(i - bar_width/2, v1 + 0.2, f"{v1}%", ha='center', va='bottom', fontsize=10)
+    plt.text(i + bar_width/2, v2 + 0.2, f"{v2}%", ha='center', va='bottom', fontsize=10)
 
-# Repositionner la légende manuellement avec les bons labels et centrer au milieu
-labels = ['Met Promotie', 'Zonder Promotie']
-plt.legend(handles=g._legend_data.values(), labels=labels, loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=2, title="Promotie")
-
-# Ajuster l'espace entre le titre et la légende
-g.fig.subplots_adjust(top=0.75)
-
-# Ajuster l'espace pour éviter le chevauchement
-g.fig.tight_layout(rect=[0, 0, 1, 0.9])
-
+# Layout aanpassen en grafiek tonen
+plt.tight_layout()
 plt.show()
